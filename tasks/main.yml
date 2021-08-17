@@ -1,2 +1,30 @@
 ---
 # tasks file for chmduquesne.nftables
+
+- name: Configure /etc/nftables.conf
+  template:
+    src: templates/etc/nftables.conf.j2
+    dest: /etc/nftables.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nftables
+
+- name: Create /etc/nftables
+  file:
+    path: /etc/nftables
+    state: directory
+
+- name: Configure include files
+  template:
+    src: templates/etc/nftables/rules.j2
+    dest: "/etc/nftables/{{ item.key }}.nft"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nftables
+  vars:
+    nftables_rules: "{{ item.value }}"
+  loop: "{{ nftables_includes | default({}) | dict2items }}"

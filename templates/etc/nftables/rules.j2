@@ -1,0 +1,6 @@
+#!/usr/sbin/nft -f
+# {{ ansible_managed }}
+
+{% for line in nftables_rules | default([]) %}
+{{ line }}
+{% endfor %}

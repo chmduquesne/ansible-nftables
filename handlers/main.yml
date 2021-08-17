@@ -1,2 +1,4 @@
 ---
 # handlers file for chmduquesne.nftables
+- name: reload nftables
+  service: name=nftables state=reloaded
