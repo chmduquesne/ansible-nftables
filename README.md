@@ -25,10 +25,10 @@ Role Variables
 Exported handlers
 -----------------
 
-The handler `reload nftables` reloads the nftables configuration. It is
-invoked if `/etc/nftables.conf` or any `nftables_include` file (so files
-in `/etc/nftables`) is modified by this role. You may invoke it in your
-own playbooks as follows:
+* The handler `reload nftables` reloads the nftables configuration. It is
+  invoked if `/etc/nftables.conf` or any `nftables_include` file (so files
+  in `/etc/nftables`) is modified by this role. You may invoke it in your
+  own playbooks as follows:
 
     - name: Write the apache config file
       ansible.builtin.template:
@@ -36,6 +36,20 @@ own playbooks as follows:
         dest: /etc/httpd.conf
       notify:
       - reload nftables
+
+* The handler `restart nftables` also exists, but is not used withing the
+  role. On most systems, restarting will flush the ruleset before having
+  nft read `/etc/nftables.conf`. On the other hand, `reload` will just
+  have nft read `/etc/nftables.conf`. Note that both achieve exactly the
+  same effect if the first line of the file is `flush ruleset`. You may
+  use it as follows:
+
+    - name: Write the apache config file
+      ansible.builtin.template:
+        src: /srv/httpd.j2
+        dest: /etc/httpd.conf
+      notify:
+      - restart nftables
 
 Dependencies
 ------------
