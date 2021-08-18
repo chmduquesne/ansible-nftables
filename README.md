@@ -1,7 +1,7 @@
 Nftables
 ========
 
-Dead simple nftables configuration
+nftables configuration
 
 Requirements
 ------------
@@ -16,10 +16,26 @@ Role Variables
   is append `include /etc/nftables/` after your statements.
 
 * `nftables_includes` (optional) must be a dictionary. The keys are files
-  to be created in `/etc/nftables` (the suffix ".nft" will be appended, so
-  a the `rules` will result in the file /etc/nftables/rules.nft). The
-  values are the raw content of those files.
+  to be created in `/etc/nftables` and the values are their content. The
+  suffix ".nft" will be appended to the file names. In other words, Using
+  `mykey` as a key and `[mycontent]` as its value will result in the
+  creation of the file `/etc/nftables/mykey.nft`, with the content
+  `mycontent`.
 
+Exported handlers
+-----------------
+
+The handler `reload nftables` reloads the nftables configuration. It is
+invoked if `/etc/nftables.conf` or any `nftables_include` file (so files
+in `/etc/nftables`) is modified by this role. You may invoke it in your
+own playbooks as follows:
+
+    - name: Write the apache config file
+      ansible.builtin.template:
+        src: /srv/httpd.j2
+        dest: /etc/httpd.conf
+      notify:
+      - reload nftables
 
 Dependencies
 ------------
@@ -29,12 +45,15 @@ None
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Here is an example
 
     - hosts: localhost
       roles:
          - chmduquesne.nftables
       vars:
+        # Use this as the content of /etc/nftables.conf. The line
+        # `include /etc/nftables/`
+        # is automatically appended at the end of the file.
         nftables_nftables_conf:
           - |
             flush ruleset
@@ -51,11 +70,10 @@ Including an example of how to use your role (for instance, with variables passe
             }
 
         nftables_includes:
-          special_rules:
+          # create /etc/nftables/apache.nft
+          apache:
             - |
               # nothing, just a comment
-
-
 
 License
 -------
