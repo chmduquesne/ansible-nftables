@@ -1,6 +1,6 @@
 ---
 # defaults file for chmduquesne.nftables
-nftables_nftables_conf:
+nftables_nftables_conf_head:
   - |
     flush ruleset
     table inet filter {
@@ -14,5 +14,11 @@ nftables_nftables_conf:
         type filter hook output priority 0;
       }
     }
+
+nftables_nftables_conf_body:
+  - |
+    include "/etc/nftables/*.nft"
+
+nftables_nftables_conf_tail: []
 
 nftables_includes: {}

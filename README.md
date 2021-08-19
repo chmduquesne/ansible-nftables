@@ -11,16 +11,46 @@ None
 Role Variables
 --------------
 
-* `nftables_nftables_conf` must contain the raw configuration you want to
-  write in `/etc/nftables.conf`. The only added thing that the role does
-  is append `include /etc/nftables/` after your statements.
+* `nftables_nftables_conf_head` must contain the raw configuration you
+  want to write at the beginning of `/etc/nftables.conf`. It is advised to
+  define it as a group variable and put in there the opening statements
+  you want for all hosts. If not specified, it defaults to:
 
-* `nftables_includes` (optional) must be a dictionary. The keys are files
-  to be created in `/etc/nftables` and the values are their content. The
-  suffix ".nft" will be appended to the file names. In other words, Using
-  `mykey` as a key and `[mycontent]` as its value will result in the
-  creation of the file `/etc/nftables/mykey.nft`, with the content
-  `mycontent`.
+```
+flush ruleset
+table inet filter {
+  chain input {
+    type filter hook input priority 0;
+  }
+  chain forward {
+    type filter hook forward priority 0;
+  }
+  chain output {
+    type filter hook output priority 0;
+  }
+}
+```
+
+* `nftables_nftables_conf_body` must contain the raw configuration you
+  want to write in the middle of `/etc/nftables.conf`. It is advised not
+  to modify its default value:
+
+```
+include "/etc/nftables/*.nft"
+```
+
+* `nftables_nftables_conf_tail` must contain the raw configuration you
+  want to write at the end of `/etc/nftables.conf`. It is advised to
+  define it as a group variable and put there the closing statements you
+  want for all hosts.
+
+* `nftables_includes` (optional) is for creating files in /etc/nftables.
+  It is advised to put there host-specific configuration. It must be a
+  dictionary. The keys are files to be created in `/etc/nftables` (the
+  suffix ".nft" will be appended to the file name) and the values are
+  their content. In other words, Using `mykey` as a key and `[mycontent]`
+  as its value will result in the creation of the file
+  `/etc/nftables/mykey.nft`, with the content `mycontent`.
 
 Exported handlers
 -----------------
@@ -39,7 +69,7 @@ Exported handlers
   - reload nftables
 ```
 
-* The handler `restart nftables` also exists, but is not used withing the
+* The handler `restart nftables` also exists, but is not used by this
   role. On most systems, restarting will flush the ruleset before having
   nft read `/etc/nftables.conf`. On the other hand, `reload` will just
   have nft read `/etc/nftables.conf`. Note that both achieve exactly the
@@ -63,36 +93,52 @@ None
 Example Playbook
 ----------------
 
-Here is an example
+Here is an idea of how the author uses the role
 
 ```YAML
 - hosts: localhost
   roles:
       - chmduquesne.nftables
   vars:
-    # Use this as the content of /etc/nftables.conf. The line
-    # `include /etc/nftables/`
-    # is automatically appended at the end of the file.
-    nftables_nftables_conf:
+    # This will go at the beginning of /etc/nftables.conf
+    nftables_nftables_conf_head:
       - |
         flush ruleset
         table inet filter {
           chain input {
-            type filter hook input priority 0;
+            type filter hook input priority 0; policy drop;
+            ct state invalid counter drop comment "drop invalid packets"
+            ct state {established, related} counter accept comment "accept all connections related to those we opened"
+            iif lo accept comment "accept loopback"
+            iif != lo ip daddr 127.0.0.1/8 counter drop comment "drop v4 connections to loopback not coming from loopback"
+            iif != lo ip6 daddr ::1/128 counter drop comment "drop v6 connections to loopback not coming from loopback"
+            ip protocol icmp counter accept comment "accept ICMP"
+            ip6 nexthdr icmpv6 counter accept comment "accept ICMPv6"
+            ip protocol udp udp sport 67 udp dport 68 counter accept comment "accept DHCP"
+            ip6 nexthdr udp udp sport 547 udp dport 546 counter accept comment "accept DHCPv6"
+            tcp dport 22 counter accept comment "accept SSH"
           }
           chain forward {
-            type filter hook forward priority 0;
+            type filter hook forward priority 0; policy drop;
           }
           chain output {
-            type filter hook output priority 0;
+            type filter hook output priority 0; policy accept;
           }
         }
 
+    # host-specific customizations
     nftables_includes:
-      # create /etc/nftables/apache.nft
-      apache:
+      # create /etc/nftables/http.nft
+      http:
         - |
-          # nothing, just a comment
+          add rule inet filter input tcp dport 80 counter accept comment "accept HTTP"
+
+    # This will go at the end of /etc/nftables.conf
+    nftables_nftables_conf_tail:
+      - |
+        add rule inet filter input counter accept comment "count dropped packets"
+        add rule inet filter forward counter accept comment "count dropped packets"
+        add rule inet filter output counter accept comment "count accepted packets"
 ```
 
 License

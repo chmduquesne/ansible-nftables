@@ -1,8 +1,14 @@
 #!/usr/sbin/nft -f
 # {{ ansible_managed }}
 
-{% for line in nftables_nftables_conf | default([]) %}
+{% for line in nftables_nftables_conf_head | default([]) %}
 {{ line }}
 {% endfor %}
 
-include "/etc/nftables/*.nft"
+{% for line in nftables_nftables_conf_body | default([]) %}
+{{ line }}
+{% endfor %}
+
+{% for line in nftables_nftables_conf_tail | default([]) %}
+{{ line }}
+{% endfor %}
