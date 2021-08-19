@@ -1,7 +1,7 @@
 Nftables
 ========
 
-nftables configuration
+Setup nftables
 
 Requirements
 ------------
