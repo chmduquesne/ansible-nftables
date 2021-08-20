@@ -149,9 +149,9 @@ Here is roughly of how the author uses the role
     # This will go at the end of /etc/nftables.conf
     nftables_nftables_conf_tail:
       - |
-        add rule inet filter input counter accept comment "count dropped packets"
-        add rule inet filter forward counter accept comment "count dropped packets"
-        add rule inet filter output counter accept comment "count accepted packets"
+        add rule inet filter input counter comment "count dropped packets"
+        add rule inet filter forward counter comment "count dropped packets"
+        add rule inet filter output counter comment "count accepted packets"
 ```
 
 License
