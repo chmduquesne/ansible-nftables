@@ -56,9 +56,9 @@ Exported handlers
 -----------------
 
 * The handler `reload nftables` reloads the nftables configuration. It is
-  invoked if `/etc/nftables.conf` or any `nftables_include` file (so files
-  in `/etc/nftables`) is modified by this role. You may invoke it in your
-  own playbooks as follows:
+  invoked if `/etc/nftables.conf` or any `nftables_include` file is
+  modified by this role. You may invoke it in your own playbooks as
+  follows:
 
   ```YAML
   - name: Write the apache config file
@@ -69,12 +69,13 @@ Exported handlers
     - reload nftables
   ```
 
-* The handler `restart nftables` also exists, but is not used by this
-  role. On most systems, restarting will flush the ruleset before having
-  nft read `/etc/nftables.conf`. On the other hand, `reload` will just
-  have nft read `/etc/nftables.conf`. Note that both achieve exactly the
-  same effect if the first line of the file is `flush ruleset`. You may
-  use it as follows:
+* The handler `restart nftables` restarts nftables. It is not invoked by
+  this role, but it is provided for those who want to use it in their own
+  playbooks. On debian, restarting will flush the ruleset before having
+  nft read `/etc/nftables.conf`, and `reload` will just have nft read
+  `/etc/nftables.conf`. Therefore, both achieve exactly the same effect if
+  the first line of the file is `flush ruleset`. You may use it as
+  follows:
 
   ```YAML
   - name: Write the apache config file
@@ -93,7 +94,7 @@ None
 Example Playbook
 ----------------
 
-Here is an idea of how the author uses the role
+Here is roughly of how the author uses the role
 
 ```YAML
 - hosts: localhost
@@ -126,7 +127,12 @@ Here is an idea of how the author uses the role
           }
         }
 
-    # host-specific customizations
+    # We don't modify the default body, so it will default to this
+    #nftables_nftables_conf_body:
+    #  - |
+    #    include "/etc/nftables/*.nft"
+
+    # We do our host-specific customizations in include files
     nftables_includes:
       # create /etc/nftables/http.nft
       http:
