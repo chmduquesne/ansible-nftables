@@ -133,13 +133,15 @@ Here is roughly of how the author uses the role
       http:
         - |
           add rule inet filter input tcp dport 80 counter accept comment "accept HTTP"
-      # will create /etc/nftables/ftp.nft
-      ftp:
+      # will create /etc/nftables/test.nft
+      test:
         - |
           add rule inet filter input tcp dport 21 counter accept comment "accept FTP (work in progress)"
 
-    # We explicitly include the parts that are known to work (so we can
-    # safely test the firewall on the host before deploying it)
+    # We explicitly only include the parts that are known to work, so we
+    # can safely test the one that are being developed with
+    # `nft -f  /etc/nftables/test.nft`
+    # without fear of losing the host if we restart the firewall.
     nftables_nftables_conf_body:
       - |
         include "/etc/nftables/http.nft"
