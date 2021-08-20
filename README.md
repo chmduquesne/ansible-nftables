@@ -32,8 +32,8 @@ Role Variables
   ```
 
 * `nftables_nftables_conf_body` must contain the raw configuration you
-  want to write in the middle of `/etc/nftables.conf`. It is advised not
-  to modify its default value:
+  want to write in the middle of `/etc/nftables.conf`. It is advised to
+  use it for include statements. If not specified, it defaults to:
 
   ```
   include "/etc/nftables/*.nft"
@@ -127,17 +127,22 @@ Here is roughly of how the author uses the role
           }
         }
 
-    # We don't modify the default body, so it will default to this
-    #nftables_nftables_conf_body:
-    #  - |
-    #    include "/etc/nftables/*.nft"
-
     # We do our host-specific customizations in include files
     nftables_includes:
-      # create /etc/nftables/http.nft
+      # will create /etc/nftables/http.nft
       http:
         - |
           add rule inet filter input tcp dport 80 counter accept comment "accept HTTP"
+      # will create /etc/nftables/ftp.nft
+      ftp:
+        - |
+          add rule inet filter input tcp dport 21 counter accept comment "accept FTP (work in progress)"
+
+    # We explicitly include the parts that are known to work (so we can
+    # safely test the firewall on the host before deploying it)
+    nftables_nftables_conf_body:
+      - |
+        include "/etc/nftables/http.nft"
 
     # This will go at the end of /etc/nftables.conf
     nftables_nftables_conf_tail:
