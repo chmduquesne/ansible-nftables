@@ -16,28 +16,28 @@ Role Variables
   define it as a group variable and put in there the opening statements
   you want for all hosts. If not specified, it defaults to:
 
-```
-flush ruleset
-table inet filter {
-  chain input {
-    type filter hook input priority 0;
+  ```
+  flush ruleset
+  table inet filter {
+    chain input {
+      type filter hook input priority 0;
+    }
+    chain forward {
+      type filter hook forward priority 0;
+    }
+    chain output {
+      type filter hook output priority 0;
+    }
   }
-  chain forward {
-    type filter hook forward priority 0;
-  }
-  chain output {
-    type filter hook output priority 0;
-  }
-}
-```
+  ```
 
 * `nftables_nftables_conf_body` must contain the raw configuration you
   want to write in the middle of `/etc/nftables.conf`. It is advised not
   to modify its default value:
 
-```
-include "/etc/nftables/*.nft"
-```
+  ```
+  include "/etc/nftables/*.nft"
+  ```
 
 * `nftables_nftables_conf_tail` must contain the raw configuration you
   want to write at the end of `/etc/nftables.conf`. It is advised to
@@ -60,14 +60,14 @@ Exported handlers
   in `/etc/nftables`) is modified by this role. You may invoke it in your
   own playbooks as follows:
 
-```YAML
-- name: Write the apache config file
-  ansible.builtin.template:
-    src: /srv/httpd.j2
-    dest: /etc/httpd.conf
-  notify:
-  - reload nftables
-```
+  ```YAML
+  - name: Write the apache config file
+    ansible.builtin.template:
+      src: /srv/httpd.j2
+      dest: /etc/httpd.conf
+    notify:
+    - reload nftables
+  ```
 
 * The handler `restart nftables` also exists, but is not used by this
   role. On most systems, restarting will flush the ruleset before having
@@ -76,14 +76,14 @@ Exported handlers
   same effect if the first line of the file is `flush ruleset`. You may
   use it as follows:
 
-```YAML
-- name: Write the apache config file
-  ansible.builtin.template:
-    src: /srv/httpd.j2
-    dest: /etc/httpd.conf
-  notify:
-  - restart nftables
-```
+  ```YAML
+  - name: Write the apache config file
+    ansible.builtin.template:
+      src: /srv/httpd.j2
+      dest: /etc/httpd.conf
+    notify:
+    - restart nftables
+  ```
 
 Dependencies
 ------------
