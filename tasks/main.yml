@@ -1,5 +1,7 @@
 ---
 # tasks file for chmduquesne.nftables
+- name: Install nftables
+  package: name=nftables state=present
 
 - name: Configure /etc/nftables.conf
   template:
